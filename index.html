@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Ulang Tahun! 🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-fall { animation: fall 3s linear; }
+        .animate-bounce { animation: bounce 2s infinite; }
+        .animate-pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body class="m-0 p-0 overflow-x-hidden">
+    <div id="app"></div>
+
+    <script>
+        let currentPage = 'welcome';
+        let openedGifts = [];
+        let showConfetti = false;
+        let musicPlaying = false;
+        let currentCard = null;
+
+        const gifts = [
+            { id: 1, color: 'from-red-400 to-pink-500', message: 'Kesehatan 💪', detail: 'Semoga lo selalu sehat, biar bisa ngejar semua mimpi lu yg pernah lu bilang ke gw ', icon: '💪' },
+            { id: 2, color: 'from-blue-400 to-cyan-500', message: 'Rezeki Melimpah 💰', detail: 'Semoga usaha lo diberkahi, dan rezeki datang dari segala arah! dan juga jangan lupa berusaha bro rejeki memang ada tapi butuh usaha juga', icon: '💰' },
+            { id: 3, color: 'from-green-400 to-emerald-500', message: 'Kebahagiaan Abadi 😊', detail: 'Semoga hari-hari lo penuh tawa dan cinta dari orang-orang terdekat lu dan semoga bahagia selalu', icon: '😊' },
+            { id: 4, color: 'from-purple-400 to-pink-500', message: 'Karir Sukses 🚀', detail: 'Semoga lo naik level di hidup ini dan semua kerja keras lu ga sia sia, kalo lu ngerasa pengen nyerah, inget ada gw yg pengen liat lu sukses', icon: '🚀' },
+            { id: 5, color: 'from-yellow-400 to-orange-500', message: 'Pertumbuhan Maksimal 📈', detail: 'Semoga lo belajar hal baru setiap hari dan jadi versi terbaik diri lo!', icon: '📈' },
+            { id: 6, color: 'from-indigo-400 to-purple-500', message: 'Semua Hal Baik ✨', detail: 'Semoga semua doa lo terkabul, dan hidup lo makin bener gw yakin hal hal baik tahun depan bakal banyak menghampiri lu,tetap jadi orang baik', icon: '✨' }
+        ];
+
+        function playMusic() {
+            if (musicPlaying) return;
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [
+                { freq: 261.63, duration: 0.5 }, { freq: 261.63, duration: 0.5 }, { freq: 293.66, duration: 1 },
+                { freq: 261.63, duration: 1 }, { freq: 349.23, duration: 1 }, { freq: 329.63, duration: 2 },
+                { freq: 261.63, duration: 0.5 }, { freq: 261.63, duration: 0.5 }, { freq: 293.66, duration: 1 },
+                { freq: 261.63, duration: 1 }, { freq: 392.00, duration: 1 }, { freq: 349.23, duration: 2 }
+            ];
+            let startTime = audioContext.currentTime;
+            notes.forEach(note => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = note.freq;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + note.duration);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + note.duration);
+                startTime += note.duration;
+            });
+            musicPlaying = true;
+            setTimeout(() => { musicPlaying = false; render(); }, startTime * 1000);
+            render();
+        }
+
+        function triggerConfetti() {
+            showConfetti = true;
+            render();
+            setTimeout(() => { showConfetti = false; render(); }, 3000);
+        }
+
+        function openGift(giftId) {
+            if (!openedGifts.includes(giftId)) {
+                openedGifts.push(giftId);
+                currentCard = gifts.find(g => g.id === giftId);
+                triggerConfetti();
+                playMusic();
+                render();
+            }
+        }
+
+        function closeCard() { currentCard = null; render(); }
+
+        function goToPage(page) {
+            currentPage = page;
+            if (page === 'game') openedGifts = [];
+            render();
+        }
+
+        function renderConfetti() {
+            if (!showConfetti) return '';
+            let confettiHTML = '';
+            const emojis = ['🎉', '🎊', '🎈', '✨', '🎁', '💝'];
+            for (let i = 0; i < 50; i++) {
+                const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                const left = Math.random() * 100;
+                const duration = 2 + Math.random() * 3;
+                confettiHTML += `<div class="absolute text-3xl animate-fall" style="left: ${left}%; top: -20px; animation-duration: ${duration}s;">${emoji}</div>`;
+            }
+            return confettiHTML;
+        }
+
+        function renderWelcomePage() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 flex items-center justify-center p-4 relative overflow-hidden">
+                    ${renderConfetti()}
+                    <div class="text-center space-y-8">
+                        <div class="text-9xl animate-bounce">🎂</div>
+                        <h1 class="text-7xl font-bold text-white drop-shadow-2xl animate-pulse">Happy Birthday!</h1>
+                        <h2 class="text-6xl font-bold text-yellow-300 drop-shadow-lg">[Felix]</h2>
+                        <p class="text-2xl text-white font-semibold">Klik tombol di bawah buat mulai petualangan hadiah!</p>
+                        <button onclick="triggerConfetti(); playMusic(); setTimeout(() => goToPage('game'), 500);" class="bg-white text-purple-600 px-12 py-4 rounded-full text-2xl font-bold hover:bg-yellow-300 hover:scale-110 transition-all duration-300 shadow-2xl animate-bounce">Mulai! 🎁</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGamePage() {
+            const remainingGifts = gifts.filter(g => !openedGifts.includes(g.id));
+            const allOpened = openedGifts.length === gifts.length;
+            let giftsHTML = '';
+            gifts.forEach(gift => {
+                const isOpened = openedGifts.includes(gift.id);
+                giftsHTML += `
+                    <div class="relative ${isOpened ? 'opacity-30' : ''}">
+                        <button onclick="${isOpened ? '' : `openGift(${gift.id})`}" ${isOpened ? 'disabled' : ''} class="w-full aspect-square bg-gradient-to-br ${gift.color} rounded-3xl shadow-2xl transform transition-all duration-300 ${!isOpened ? 'hover:scale-110 hover:rotate-6 cursor-pointer' : ''} flex flex-col items-center justify-center">
+                            <div class="text-7xl mb-4">${isOpened ? '📭' : '🎁'}</div>
+                            <div class="text-white font-bold text-lg">${isOpened ? 'Dibuka!' : 'Klik Aku!'}</div>
+                        </button>
+                    </div>
+                `;
+            });
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 relative overflow-hidden">
+                    ${renderConfetti()}
+                    <div class="max-w-6xl mx-auto">
+                        <div class="text-center mb-12">
+                            <h1 class="text-5xl font-bold text-white mb-4 drop-shadow-lg">🎁 Buka Hadiahnya! 🎁</h1>
+                            <p class="text-2xl text-yellow-300 font-semibold">${allOpened ? 'Semua hadiah udah dibuka! 🎉' : `Masih ada ${remainingGifts.length} hadiah!`}</p>
+                            <div class="mt-4"><button onclick="playMusic()" ${musicPlaying ? 'disabled' : ''} class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-full font-bold hover:bg-white/30 transition-all">${musicPlaying ? '🔊 Sedang Main...' : '🎵 Putar Musik'}</button></div>
+                        </div>
+                        ${!allOpened ? `<div class="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">${giftsHTML}</div>` : `
+                            <div class="text-center space-y-6 bg-white/10 backdrop-blur-sm rounded-3xl p-12">
+                                <h2 class="text-4xl font-bold text-white">Selesai! 🎊</h2>
+                                <p class="text-2xl text-yellow-300">Sekarang waktunya baca pesan spesial!</p>
+                                <button onclick="goToPage('message')" class="bg-white text-purple-600 px-12 py-4 rounded-full text-2xl font-bold hover:bg-yellow-300 hover:scale-110 transition-all duration-300 shadow-2xl">Baca Pesan! 💌</button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCardModal() {
+            if (!currentCard) return '';
+            return `
+                <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onclick="closeCard()">
+                    <div class="bg-gradient-to-br ${currentCard.color} rounded-3xl p-8 max-w-lg w-full shadow-2xl transform animate-bounce" onclick="event.stopPropagation()">
+                        <div class="text-center space-y-6">
+                            <div class="text-8xl">${currentCard.icon}</div>
+                            <h2 class="text-4xl font-bold text-white drop-shadow-lg">${currentCard.message}</h2>
+                            <p class="text-xl text-white/90 leading-relaxed">${currentCard.detail}</p>
+                            <button onclick="closeCard()" class="bg-white/20 backdrop-blur-sm text-white px-8 py-3 rounded-full text-lg font-bold hover:bg-white/30 transition-all">Tutup ✨</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMessagePage() {
+            let wishesHTML = '';
+            gifts.forEach(gift => {
+                wishesHTML += `<div class="flex items-start gap-3 text-gray-700 bg-white p-4 rounded-xl"><span class="text-3xl">${gift.icon}</span><div><div class="font-bold text-purple-600">${gift.message}</div><div class="text-sm">${gift.detail}</div></div></div>`;
+            });
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 overflow-auto">
+                    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8 space-y-6">
+                        <div class="text-center space-y-4">
+                            <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">Yo [my bro Felix]! 🎉</h1>
+                        </div>
+                        <div class="space-y-4 text-lg text-gray-700 leading-relaxed">
+                            <p>Selamat ulang tahun! Sorry telat ngucapin gw stress bikin ini Semoga tahun ini lo dapet semua yang lo impikan. Lo itu orang hebat, dan gw yakin lo bisa capai apa aja.</p>
+                            <p>Kita temenan lama, dan gw seneng banget bisa ada di hidup lo. Teruslah jadi diri lo sendiri!</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 border-l-4 border-purple-600">
+                            <h2 class="text-2xl font-bold text-purple-700 mb-4">✨ Doa Gw Buat Lo:</h2>
+                            <div class="space-y-4">${wishesHTML}</div>
+                        </div>
+                        <div class="space-y-4 text-lg text-gray-700">
+                            <p>Gw doain lo selalu bahagia dan sukses. Enjoy hari spesial lo!</p>
+                        </div>
+                        <div class="text-right text-xl text-purple-700 font-semibold italic pt-6 border-t-2 border-purple-200">
+                            <p>From,</p>
+                            <p class="text-2xl">Sahabat Lo 😊</p>
+                        </div>
+                        <div class="flex gap-4 justify-center pt-8">
+                            <button onclick="goToPage('game')" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-110 transition-all duration-300 shadow-xl">Main Lagi! 🎁</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            let html = '';
+            if (currentPage === 'welcome') html = renderWelcomePage();
+            else if (currentPage === 'game') html = renderGamePage();
+            else if (currentPage === 'message') html = renderMessagePage();
+            html += renderCardModal();
+            document.getElementById('app').innerHTML = html;
+        }
+
+        render();
+    </script>
+</body>
+</html>
